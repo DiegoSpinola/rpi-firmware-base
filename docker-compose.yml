@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  demo-webserver:
+    build:
+      context: ./demo
+      args:
+        - COMMIT_HASH=${COMMIT_HASH}
+    image: push.igmify.com/alloy-template/demo-webserver:${COMMIT_HASH}
+    ports:
+      - "8080:80"
