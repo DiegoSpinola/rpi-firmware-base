@@ -1,79 +1,76 @@
-# Alloy Template Project
+# rpi-firmware-base
 
-The Alloy Template Project is a starting point for projects using the Alloy framework. This template includes a sample `alloy-dummy-helloworld` dependency that fetches a basic webserver with a "Hello World" message and the Alloy logo.
+Generic base Docker image for Raspberry Pi applications. Provides a minimal Debian runtime with hardware access utilities that downstream images can specialize.
 
-## Getting Started
+## What's included
+
+- **Debian Bookworm slim** (aarch64)
+- **System utilities**: curl, udev, usbutils, i2c-tools, kmod
+
+## Usage
+
+Downstream images reference this as their base:
+
+```dockerfile
+FROM push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest
+
+# Add your application stack
+RUN apt-get update && apt-get install -y ...
+COPY entrypoint.sh /app/
+ENTRYPOINT ["/app/entrypoint.sh"]
+```
+
+### Example downstream images
+
+- GStreamer + libcamera layer (for camera applications)
+- Serial/USB device communication
+- Sensor logging (I2C, SPI, GPIO)
+
+## Development
 
 ### Prerequisites
 
-Before using this template, ensure that you have the following installed:
-
-- [Docker](https://www.docker.com/get-started)
+- Docker
 - [Alloy framework](https://github.com/igma-company/alloy)
 
-### Installation
+### Build
 
-1. Clone this repository:
+```bash
+# Start Alloy environment
+./alloy.sh
 
-   ```bash
-   git clone git@github.com:igma-company/alloy-template.git
-   cd alloy-template
-   ```
+# Build the image
+bash build.sh
+```
 
-2. Start the Alloy environment by running:
+### Deploy
 
-   ```bash
-   ./alloy.sh
-   ```
+```bash
+# Push to registry (requires VPN)
+bash deploy.sh
+```
 
-   This script will download the Alloy Docker image if needed and run it in interactive mode. The pulled image mounts your project workspace folder into the Alloy container.
+### Run
 
-3. Fetch dependencies using the alloy clone command (this recursively fetches all dependencies):
-
-   ```bash
-   alloy clone
-   ```
-
-### Using the scripts
-
-Once inside the Alloy environment, you can use the available scripts:
-
-1. **Build**: Run `build.sh` to build the `demo-webserver` Docker image using the included `docker-compose.yml` file.
-
-   ```bash
-   bash build.sh
-   ```
-
-2. **Run**: Run `run.sh` to start the `demo-webserver`. It will be available on `http://[HOST_IP]:8080`.
-
-   ```bash
-   bash run.sh
-   ```
-
-3. **Deploy**: Run `deploy.sh` to execute the deploy process. Note that this script only outputs a message for now. You need to implement custom deployment logic based on your project requirements.
-
-   ```bash
-   bash deploy.sh
-   ```
-
-   Don't forget to replace the mock deployment message with your custom deployment logic.
+> **Note**: `run.sh` uses `docker-compose up` which starts the container on the build server. Since this image targets arm64 (Raspberry Pi), it cannot run natively on an x86 build host. For now, `run.sh` is kept as-is from the template but will not work until run on an arm64 host or via QEMU emulation.
 
 ## Project Structure
 
 ```
-alloy-template/
-├── alloy.sh            # Start Alloy environment (run with ./alloy.sh)
-├── build.sh            # Build Docker images (run with bash build.sh)
-├── run.sh              # Run services (run with bash run.sh)
-├── deploy.sh           # Deploy to registry (run with bash deploy.sh)
-├── docker-compose.yml  # Service definitions
-├── .config             # Alloy dependencies
-├── .gitignore          # Git ignore patterns
-└── demo/               # Demo webserver (via alloy clone)
+rpi-firmware-base/
+├── Dockerfile          # Base image definition (aarch64)
+├── docker-compose.yml  # Build orchestration
+├── .config             # Alloy configuration
+├── alloy.sh            # Start Alloy environment
+├── build.sh            # Build image
+├── deploy.sh           # Push to registry
+├── run.sh              # Run service (see note above)
+└── README.md
 ```
 
-> **Note on script execution:** Only `alloy.sh` has the executable bit set and can be run directly with `./alloy.sh`. This is because it runs on the user's host machine where we cannot assume which shell is configured (bash, zsh, fish, etc.). All other scripts run inside the Alloy environment where bash is guaranteed, so they should be invoked with `bash script.sh`.
+## Runtime requirements
 
-## Contributing
+Containers built from this image need on the Pi:
 
-Should you find any issues or have suggestions, feel free to open an issue or submit a pull request. We appreciate your contributions to improve the Alloy Template Project.
+- **`--privileged`** (or specific `--device` flags for the hardware you need)
+- Relevant kernel modules loaded on the host
