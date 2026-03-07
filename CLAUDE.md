@@ -20,13 +20,16 @@ App image (e.g. tofsrc, serial-logger, etc.)
   Debian Bookworm slim (aarch64)
 ```
 
-The base image is intentionally minimal. It includes only system utilities common to any Pi application (udev, usbutils, i2c-tools, kmod, curl). All domain-specific packages belong in downstream images.
+The base image is intentionally minimal. It includes system utilities common to any Pi application (udev, usbutils, i2c-tools, kmod, curl) plus Pi-specific tools (vcgencmd, pinctrl via `raspberrypi-utils`). All domain-specific packages belong in downstream images.
+
+A built-in `self-test` command verifies peripheral access (CPU temp, throttling, GPIO, I2C, SPI, serial, USB, video, kernel modules).
 
 ## Project Structure
 
 ```
 rpi-firmware-base/
 ├── Dockerfile          # Base image definition
+├── self-test.sh        # Peripheral self-test (baked into image as `self-test`)
 ├── docker-compose.yml  # Build orchestration + image naming
 ├── .config             # Alloy dependencies + deployable service
 ├── alloy.sh            # Alloy environment launcher (host-side)
@@ -55,7 +58,9 @@ push.igmify.com/rpi-firmware-base/rpi-firmware-base:${COMMIT_HASH}
 
 ## Key Decisions
 
-- **Minimal base** — Only system utilities. No GStreamer, no libcamera, no application frameworks.
+- **Minimal base** — System utilities + Pi-specific tools. No GStreamer, no libcamera, no application frameworks.
+- **RPi apt repo included** — `raspberrypi-utils` (vcgencmd, pinctrl) requires the RPi apt repo.
+- **Built-in self-test** — `self-test` command baked into the image for verifying peripheral access.
 - **arm64 only** — Targets Raspberry Pi. `run.sh` will not work on x86 build hosts.
 - **Privileged runtime** — Containers need `--privileged` or `--device` flags for hardware access.
 - **Template scripts unchanged** — `build.sh`, `deploy.sh`, `run.sh`, `alloy.sh` follow the standard Alloy template pattern.

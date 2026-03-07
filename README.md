@@ -5,7 +5,9 @@ Generic base Docker image for Raspberry Pi applications. Provides a minimal Debi
 ## What's included
 
 - **Debian Bookworm slim** (aarch64)
+- **Pi utilities**: vcgencmd, pinctrl (from RPi apt repo via `raspberrypi-utils`)
 - **System utilities**: curl, udev, usbutils, i2c-tools, kmod
+- **Built-in self-test**: `self-test` command to verify peripheral access
 
 ## Usage
 
@@ -54,11 +56,22 @@ bash deploy.sh
 
 > **Note**: `run.sh` uses `docker-compose up` which starts the container on the build server. Since this image targets arm64 (Raspberry Pi), it cannot run natively on an x86 build host. For now, `run.sh` is kept as-is from the template but will not work until run on an arm64 host or via QEMU emulation.
 
+### Self-test
+
+Once the container is running on a Pi, verify peripheral access:
+
+```bash
+docker exec <container> self-test
+```
+
+Checks CPU temp, throttling, firmware, GPIO, I2C, SPI, serial, USB, video devices, and kernel modules.
+
 ## Project Structure
 
 ```
 rpi-firmware-base/
 ├── Dockerfile          # Base image definition (aarch64)
+├── self-test.sh        # Peripheral self-test (baked into image as `self-test`)
 ├── docker-compose.yml  # Build orchestration
 ├── .config             # Alloy configuration
 ├── alloy.sh            # Start Alloy environment
