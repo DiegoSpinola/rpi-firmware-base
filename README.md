@@ -81,9 +81,50 @@ rpi-firmware-base/
 └── README.md
 ```
 
-## Runtime requirements
+## Running on a Raspberry Pi
 
-Containers built from this image need on the Pi:
+### 1. Install Docker
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+# Log out and back in for group change to take effect
+```
+
+### 2. Pull and run
+
+```bash
+# Pull the base image
+docker pull push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest
+
+# Run with hardware access
+docker run --rm --privileged \
+    push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest \
+    self-test
+```
+
+### 3. Run interactively
+
+```bash
+docker run -it --privileged \
+    push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest \
+    bash
+```
+
+### 4. Portainer (optional — remote management)
+
+```bash
+docker run -d -p 9443:9443 --name portainer \
+    --restart=always \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v portainer_data:/data \
+    portainer/portainer-ce:latest
+```
+
+Access Portainer at `https://<pi-ip>:9443`. From there you can deploy stacks, pull new images, and manage containers via web UI.
+
+### Runtime requirements
 
 - **`--privileged`** (or specific `--device` flags for the hardware you need)
+- **`network_mode: host`** if the application needs network services (e.g. RTSP)
 - Relevant kernel modules loaded on the host
