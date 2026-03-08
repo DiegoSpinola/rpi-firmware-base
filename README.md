@@ -85,10 +85,18 @@ rpi-firmware-base/
 
 ### 1. Install Docker
 
+Docker is a prerequisite on every target Pi. The official convenience script installs `docker-ce`, `docker-ce-cli`, `containerd.io`, and `docker-compose-plugin`. It does **not** upgrade existing packages — safe to run alongside fragile stacks (Arducam, libcamera, etc.).
+
 ```bash
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 # Log out and back in for group change to take effect
+```
+
+Verify:
+
+```bash
+docker run --rm hello-world
 ```
 
 ### 2. Pull and run
