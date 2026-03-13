@@ -2,19 +2,25 @@
 
 Generic base Docker image for Raspberry Pi applications. Provides a minimal Debian runtime with hardware access utilities that downstream images can specialize.
 
-## What's included
+## Image Variants
 
-- **Debian Bookworm slim** (aarch64)
-- **Pi utilities**: vcgencmd, pinctrl (from RPi apt repo via `raspberrypi-utils`)
-- **System utilities**: curl, udev, usbutils, i2c-tools, kmod
-- **Built-in self-test**: `self-test` command to verify peripheral access
+Two variants are built from separate Dockerfiles:
+
+| Variant | Base | Pi utilities package | Tag format |
+|---------|------|---------------------|------------|
+| **Bookworm** | `debian:bookworm-slim` | `libraspberrypi-bin` | `bookworm-<hash>` |
+| **Trixie** | `debian:trixie-slim` | `raspi-utils-core` | `trixie-<hash>` |
+
+Both include: curl, udev, usbutils, i2c-tools, kmod, vcgencmd, pinctrl, and a built-in `self-test` command.
+
+> **Note (Trixie):** The RPi apt repo signs its trixie InRelease with a SHA1 key, which Debian Trixie's `sqv` rejects since 2026-02-01. The trixie Dockerfile uses `[trusted=yes]` as a workaround. See [issue #9](https://github.com/igma-company/harus-hw-env/issues/9) — remove once RPi re-signs with SHA256+.
 
 ## Usage
 
-Downstream images reference this as their base:
+Downstream images reference a variant as their base:
 
 ```dockerfile
-FROM push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest
+FROM push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest
 
 # Add your application stack
 RUN apt-get update && apt-get install -y ...
@@ -25,25 +31,71 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 ### Example downstream images
 
 - GStreamer + libcamera layer (for camera applications)
-- Serial/USB device communication
+- Serial/USB device communication (e.g. gantry daemon)
 - Sensor logging (I2C, SPI, GPIO)
 
 ## Development
 
 ### Prerequisites
 
-- Docker
+- Docker (with Docker Compose v2 plugin for cross-compilation)
 - [Alloy framework](https://github.com/igma-company/alloy)
 
-### Build
+### Build (native, on a Pi)
 
 ```bash
-# Start Alloy environment
 ./alloy.sh
-
-# Build the image
 bash build.sh
 ```
+
+### Cross-compilation (x86 host building arm64 images)
+
+Building arm64 images on an x86 host requires QEMU user-mode emulation and Docker Compose v2.
+
+#### 1. Install Docker Compose v2
+
+The legacy `docker-compose` (v1, Python) does not support cross-platform builds. Docker Compose v2 (Go plugin) does.
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install docker-compose-v2
+
+# Verify
+docker compose version
+# Should show v2.x
+```
+
+#### 2. Register QEMU binfmt for arm64
+
+This lets Docker run arm64 binaries inside containers on an x86 host:
+
+```bash
+docker run --privileged --rm tonistiigi/binfmt --install arm64
+```
+
+This only needs to be done once per host boot. Verify:
+
+```bash
+docker run --rm --platform linux/arm64 debian:bookworm-slim uname -m
+# Should output: aarch64
+```
+
+#### 3. Build with xbuild.sh
+
+```bash
+./alloy.sh
+bash xbuild.sh
+```
+
+`xbuild.sh` is identical to `build.sh` but uses `docker compose` (v2) instead of `docker-compose` (v1). It builds both bookworm and trixie variants in parallel.
+
+Output images:
+```
+push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-<hash>
+push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-<hash>
+```
+
+(Tag is `WIP` if the git tree is dirty.)
 
 ### Deploy
 
@@ -51,10 +103,6 @@ bash build.sh
 # Push to registry (requires VPN)
 bash deploy.sh
 ```
-
-### Run
-
-> **Note**: `run.sh` uses `docker-compose up` which starts the container on the build server. Since this image targets arm64 (Raspberry Pi), it cannot run natively on an x86 build host. For now, `run.sh` is kept as-is from the template but will not work until run on an arm64 host or via QEMU emulation.
 
 ### Self-test
 
@@ -70,16 +118,20 @@ Checks CPU temp, throttling, firmware, GPIO, I2C, SPI, serial, USB, video device
 
 ```
 rpi-firmware-base/
-├── Dockerfile          # Base image definition (aarch64)
-├── self-test.sh        # Peripheral self-test (baked into image as `self-test`)
-├── docker-compose.yml  # Build orchestration
-├── .config             # Alloy configuration
-├── alloy.sh            # Start Alloy environment
-├── build.sh            # Build image
-├── deploy.sh           # Push to registry
-├── run.sh              # Run service (see note above)
+├── Dockerfile.bookworm  # Bookworm variant (libraspberrypi-bin)
+├── Dockerfile.trixie    # Trixie variant (raspi-utils-core, trusted=yes workaround)
+├── self-test.sh         # Peripheral self-test (baked into image as `self-test`)
+├── docker-compose.yml   # Build orchestration (both variants)
+├── .config              # Alloy configuration + deployable services
+├── alloy.sh             # Start Alloy environment
+├── build.sh             # Build image (native, docker-compose v1)
+├── xbuild.sh            # Build image (cross-compile, docker compose v2)
+├── deploy.sh            # Push to registry
+├── run.sh               # Run service (arm64 only — see note below)
 └── README.md
 ```
+
+> **Note**: `run.sh` uses `docker-compose up` which starts the container on the build server. Since images target arm64, this will not work on an x86 host without QEMU. Use `run.sh` on a Pi or after setting up QEMU (see cross-compilation above).
 
 ## Running on a Raspberry Pi
 
@@ -102,12 +154,12 @@ docker run --rm hello-world
 ### 2. Pull and run
 
 ```bash
-# Pull the base image
-docker pull push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest
+# Pull the bookworm image
+docker pull push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest
 
 # Run with hardware access
 docker run --rm --privileged \
-    push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest \
+    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest \
     self-test
 ```
 
@@ -115,7 +167,7 @@ docker run --rm --privileged \
 
 ```bash
 docker run -it --privileged \
-    push.igmify.com/rpi-firmware-base/rpi-firmware-base:latest \
+    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest \
     bash
 ```
 

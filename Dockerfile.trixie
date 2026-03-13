@@ -1,15 +1,15 @@
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 ARG COMMIT_HASH=unknown
 LABEL org.opencontainers.image.revision="${COMMIT_HASH}"
-LABEL org.opencontainers.image.description="Raspberry Pi firmware base image"
+LABEL org.opencontainers.image.description="Raspberry Pi firmware base image (trixie)"
 
 # Add Raspberry Pi apt repository (for vcgencmd, pinctrl, etc.)
+# HACK: Using [trusted=yes] because RPi repo signing key uses SHA1,
+# which trixie's sqv rejects since 2026-02-01. Remove once RPi re-signs with SHA256+.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates gnupg curl \
-    && curl -fsSL https://archive.raspberrypi.com/debian/raspberrypi.gpg.key \
-        | gpg --dearmor -o /usr/share/keyrings/raspberrypi-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/raspberrypi-archive-keyring.gpg] http://archive.raspberrypi.com/debian/ bookworm main" \
+    && echo "deb [trusted=yes] http://archive.raspberrypi.com/debian/ trixie main" \
         > /etc/apt/sources.list.d/raspi.list \
     && apt-get update
 
@@ -19,7 +19,7 @@ RUN apt-get install -y --no-install-recommends \
         usbutils \
         i2c-tools \
         kmod \
-        raspberrypi-utils \
+        raspi-utils-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Self-test script

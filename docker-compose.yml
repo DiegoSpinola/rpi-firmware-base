@@ -1,11 +1,18 @@
-version: '3'
-
 services:
-  rpi-firmware-base:
+  rpi-firmware-base-bookworm:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.bookworm
       args:
         - COMMIT_HASH=${COMMIT_HASH}
-    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:${COMMIT_HASH}
+    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-${COMMIT_HASH}
+    platform: linux/arm64
+
+  rpi-firmware-base-trixie:
+    build:
+      context: .
+      dockerfile: Dockerfile.trixie
+      args:
+        - COMMIT_HASH=${COMMIT_HASH}
+    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-${COMMIT_HASH}
     platform: linux/arm64
