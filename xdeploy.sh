@@ -62,7 +62,7 @@ for service in $SERVICES_TO_DEPLOY; do
   echo "Image being pushed for $service: $IMG_NAME"
   if [[ "$IMG_NAME" != *WIP ]]; then
     echo "	Tagging $IMG_NAME with the 'latest' tag and pushing..."
-    LATEST_IMAGE_TAG="${IMG_NAME%:*}:latest"
+    LATEST_IMAGE_TAG="${IMG_NAME/${COMMIT_HASH}/latest}"
     echo "	image becomes: $LATEST_IMAGE_TAG"
     docker tag $IMG_NAME $LATEST_IMAGE_TAG
     docker push $LATEST_IMAGE_TAG
