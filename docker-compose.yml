@@ -16,3 +16,21 @@ services:
         - COMMIT_HASH=${COMMIT_HASH}
     image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-arm64-${COMMIT_HASH}
     platform: linux/arm64
+
+  rpi-firmware-base-bookworm-armv7:
+    build:
+      context: .
+      dockerfile: Dockerfile.bookworm
+      args:
+        - COMMIT_HASH=${COMMIT_HASH}
+    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-armv7-${COMMIT_HASH}
+    platform: linux/arm/v7
+
+  rpi-firmware-base-trixie-armv7:
+    build:
+      context: .
+      dockerfile: Dockerfile.trixie
+      args:
+        - COMMIT_HASH=${COMMIT_HASH}
+    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-armv7-${COMMIT_HASH}
+    platform: linux/arm/v7
