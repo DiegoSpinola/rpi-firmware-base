@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile.bookworm
       args:
         - COMMIT_HASH=${COMMIT_HASH}
-    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-${COMMIT_HASH}
+    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-${COMMIT_HASH}
     platform: linux/arm64
 
   rpi-firmware-base-trixie:
@@ -14,5 +14,5 @@ services:
       dockerfile: Dockerfile.trixie
       args:
         - COMMIT_HASH=${COMMIT_HASH}
-    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-${COMMIT_HASH}
+    image: push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-arm64-${COMMIT_HASH}
     platform: linux/arm64

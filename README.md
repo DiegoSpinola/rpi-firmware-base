@@ -8,8 +8,8 @@ Two variants are built from separate Dockerfiles:
 
 | Variant | Base | Pi utilities package | Tag format |
 |---------|------|---------------------|------------|
-| **Bookworm** | `debian:bookworm-slim` | `libraspberrypi-bin` | `bookworm-<hash>` |
-| **Trixie** | `debian:trixie-slim` | `raspi-utils-core` | `trixie-<hash>` |
+| **Bookworm** | `debian:bookworm-slim` | `libraspberrypi-bin` | `bookworm-arm64-<hash>` |
+| **Trixie** | `debian:trixie-slim` | `raspi-utils-core` | `trixie-arm64-<hash>` |
 
 Both include: curl, udev, usbutils, i2c-tools, kmod, vcgencmd, pinctrl, and a built-in `self-test` command.
 
@@ -20,7 +20,7 @@ Both include: curl, udev, usbutils, i2c-tools, kmod, vcgencmd, pinctrl, and a bu
 Downstream images reference a variant as their base:
 
 ```dockerfile
-FROM push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest
+FROM push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest
 
 # Add your application stack
 RUN apt-get update && apt-get install -y ...
@@ -91,8 +91,8 @@ bash xbuild.sh
 
 Output images:
 ```
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-<hash>
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-<hash>
+push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-<hash>
+push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-arm64-<hash>
 ```
 
 (Tag is `WIP` if the git tree is dirty.)
@@ -155,11 +155,11 @@ docker run --rm hello-world
 
 ```bash
 # Pull the bookworm image
-docker pull push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest
+docker pull push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest
 
 # Run with hardware access
 docker run --rm --privileged \
-    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest \
+    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest \
     self-test
 ```
 
@@ -167,7 +167,7 @@ docker run --rm --privileged \
 
 ```bash
 docker run -it --privileged \
-    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-latest \
+    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest \
     bash
 ```
 
