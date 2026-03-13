@@ -4,14 +4,16 @@ Generic base Docker image for Raspberry Pi applications. Provides a minimal Debi
 
 ## Image Variants
 
-Two variants are built from separate Dockerfiles:
+Four variants are built from two Dockerfiles across two architectures:
 
-| Variant | Base | Pi utilities package | Tag format |
-|---------|------|---------------------|------------|
-| **Bookworm** | `debian:bookworm-slim` | `libraspberrypi-bin` | `bookworm-arm64-<hash>` |
-| **Trixie** | `debian:trixie-slim` | `raspi-utils-core` | `trixie-arm64-<hash>` |
+| Variant | Base | Pi utilities package | Arch | Tag format | Target |
+|---------|------|---------------------|------|------------|--------|
+| **Bookworm arm64** | `debian:bookworm-slim` | `libraspberrypi-bin` | aarch64 | `bookworm-arm64-<hash>` | Pi 4, Pi 5 |
+| **Trixie arm64** | `debian:trixie-slim` | `raspi-utils-core` | aarch64 | `trixie-arm64-<hash>` | Pi 4, Pi 5 |
+| **Bookworm armv7** | `debian:bookworm-slim` | `libraspberrypi-bin` | armhf | `bookworm-armv7-<hash>` | Pi 2, Pi 3, Pi Zero W |
+| **Trixie armv7** | `debian:trixie-slim` | `raspi-utils-core` | armhf | `trixie-armv7-<hash>` | Pi 2, Pi 3, Pi Zero W |
 
-Both include: curl, udev, usbutils, i2c-tools, kmod, vcgencmd, pinctrl, and a built-in `self-test` command.
+All variants include: curl, udev, usbutils, i2c-tools, kmod, vcgencmd, pinctrl, and a built-in `self-test` command.
 
 > **Note (Trixie):** The RPi apt repo signs its trixie InRelease with a SHA1 key, which Debian Trixie's `sqv` rejects since 2026-02-01. The trixie Dockerfile uses `[trusted=yes]` as a workaround. See [issue #9](https://github.com/igma-company/harus-hw-env/issues/9) — remove once RPi re-signs with SHA256+.
 
@@ -67,10 +69,10 @@ docker compose version
 
 #### 2. Register QEMU binfmt for arm64
 
-This lets Docker run arm64 binaries inside containers on an x86 host:
+This lets Docker run arm64 and armv7 binaries inside containers on an x86 host:
 
 ```bash
-docker run --privileged --rm tonistiigi/binfmt --install arm64
+docker run --privileged --rm tonistiigi/binfmt --install arm64,arm
 ```
 
 This only needs to be done once per host boot. Verify:
@@ -87,12 +89,14 @@ docker run --rm --platform linux/arm64 debian:bookworm-slim uname -m
 bash xbuild.sh
 ```
 
-`xbuild.sh` is identical to `build.sh` but uses `docker compose` (v2) instead of `docker-compose` (v1). It builds both bookworm and trixie variants in parallel.
+`xbuild.sh` is identical to `build.sh` but uses `docker compose` (v2) instead of `docker-compose` (v1). It builds all four variants in parallel.
 
 Output images:
 ```
 push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-<hash>
 push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-arm64-<hash>
+push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-armv7-<hash>
+push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-armv7-<hash>
 ```
 
 (Tag is `WIP` if the git tree is dirty.)
