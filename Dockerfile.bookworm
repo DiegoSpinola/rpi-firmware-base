@@ -22,6 +22,18 @@ RUN apt-get install -y --no-install-recommends \
         libraspberrypi-bin \
     && rm -rf /var/lib/apt/lists/*
 
+# pinctrl — not in any apt package for bookworm, build from raspberrypi/utils
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        cmake gcc g++ make git \
+    && git clone --depth 1 https://github.com/raspberrypi/utils.git /tmp/rpi-utils \
+    && cmake -S /tmp/rpi-utils/pinctrl -B /tmp/rpi-utils/pinctrl/build \
+    && make -C /tmp/rpi-utils/pinctrl/build -j$(nproc) \
+    && cp /tmp/rpi-utils/pinctrl/build/pinctrl /usr/local/bin/ \
+    && rm -rf /tmp/rpi-utils \
+    && apt-get purge -y cmake gcc g++ make git \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # Self-test script
 COPY self-test.sh /usr/local/bin/self-test
 RUN chmod +x /usr/local/bin/self-test
