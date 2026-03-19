@@ -7,7 +7,7 @@ if [[ "$CUSTOM_HOSTNAME" != "alloy" ]]; then
 fi
 
 # Check if the registry is reachable
-REGISTRY_URL="push.igmify.com"
+REGISTRY_URL="registry.hackeneering.com"
 if ! ping -4 -c 1 "$REGISTRY_URL" > /dev/null; then
   echo "ERROR: The registry $REGISTRY_URL is not reachable. Are you connected to the Igma R&D VPN? If not, request access via the Slack channel."
   exit 1

@@ -22,7 +22,7 @@ All variants include: curl, udev, usbutils, i2c-tools, kmod, vcgencmd, pinctrl, 
 Downstream images reference a variant as their base:
 
 ```dockerfile
-FROM push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest
+FROM registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-arm64-latest
 
 # Add your application stack
 RUN apt-get update && apt-get install -y ...
@@ -93,10 +93,10 @@ bash xbuild.sh
 
 Output images:
 ```
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-<hash>
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-arm64-<hash>
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-armv7-<hash>
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:trixie-armv7-<hash>
+registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-arm64-<hash>
+registry.hackeneering.com/hackeneering/rpi-firmware-base:trixie-arm64-<hash>
+registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-armv7-<hash>
+registry.hackeneering.com/hackeneering/rpi-firmware-base:trixie-armv7-<hash>
 ```
 
 (Tag is `WIP` if the git tree is dirty.)
@@ -159,11 +159,11 @@ docker run --rm hello-world
 
 ```bash
 # Pull the bookworm image
-docker pull push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest
+docker pull registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-arm64-latest
 
 # Run with hardware access
 docker run --rm --privileged \
-    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest \
+    registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-arm64-latest \
     self-test
 ```
 
@@ -171,7 +171,7 @@ docker run --rm --privileged \
 
 ```bash
 docker run -it --privileged \
-    push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-arm64-latest \
+    registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-arm64-latest \
     bash
 ```
 

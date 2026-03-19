@@ -45,14 +45,14 @@ The RPi apt repo signs its trixie InRelease with a SHA1 key, which Debian Trixie
 ## Image naming
 
 ```
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:<variant>-<arch>-<hash>
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:<variant>-<arch>-latest
+registry.hackeneering.com/hackeneering/rpi-firmware-base:<variant>-<arch>-<hash>
+registry.hackeneering.com/hackeneering/rpi-firmware-base:<variant>-<arch>-latest
 ```
 
 Examples:
 ```
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-armv7-f2068dd
-push.igmify.com/rpi-firmware-base/rpi-firmware-base:bookworm-armv7-latest
+registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-armv7-f2068dd
+registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-armv7-latest
 ```
 
 ## Project Structure
@@ -87,7 +87,7 @@ Use `xbuild.sh` / `xdeploy.sh` instead of `build.sh` / `deploy.sh`. The `x` vari
 
 - **`alloy.sh`** — Run on host to enter the Alloy container
 - **`build.sh`** / **`xbuild.sh`** — Build Docker images, tag with git commit hash (or `WIP` if dirty)
-- **`deploy.sh`** / **`xdeploy.sh`** — Push to `push.igmify.com` registry (requires VPN)
+- **`deploy.sh`** / **`xdeploy.sh`** — Push to `registry.hackeneering.com` registry
 - **`run.sh`** — Starts service via docker-compose (arm only)
 
 All scripts except `alloy.sh` require the Alloy environment (`$CUSTOM_HOSTNAME == "alloy"`).
