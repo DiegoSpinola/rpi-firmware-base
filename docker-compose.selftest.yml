@@ -1,0 +1,6 @@
+services:
+  selftest:
+    image: registry.hackeneering.com/hackeneering/rpi-firmware-base:bookworm-arm64-latest
+    privileged: true
+    command: self-test
+    restart: "no"
